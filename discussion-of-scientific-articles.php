@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Discussion of scientific articles
-Description: Add a new post-type, text widget. Allows scientists to discuss scientific articles.
+Description: Add a new post-type. Allows scientists to discuss scientific articles.
 
 Plugin URI: #
 Author: mIryna
@@ -110,46 +110,47 @@ add_action( 'contextual_help', 'discussion_contextual_help', 10, 3 );
 // METABOXES
 //=======================================================
 
+
 /**
- * Adds  the metabox 'Author and Title of the article'
+ * Adds  the metabox 'Discussion author'
  *-------------------------------------------------
  */
-function author_and_title_custom_meta() {
-    add_meta_box( 'author_and_title_meta',
-        __('The discussed article'),
-        'author_and_title_meta_callback',
+function discussion_author_box() {
+    add_meta_box( 'discussion_author',
+        __('Author'),
+        'discussion_author_callback',
         'discussion',
         'advanced',
         'default' );
 }
-add_action('add_meta_boxes', 'author_and_title_custom_meta');
+add_action('add_meta_boxes', 'discussion_author_box');
 
 /**
- *  Describes the metabox 'Author and Title of the article'
+ *  Describes the metabox 'Discussion author'
  */
 
-function author_and_title_meta_callback( $post ) {
-    wp_nonce_field( basename(__FILE__), 'author_and_title_nonce');
-    $author_and_title_stored_meta = get_post_meta( $post->ID );
+function discussion_author_callback( $post ) {
+    wp_nonce_field( basename(__FILE__), 'discussion_author_nonce');
+    $discussion_author_stored = get_post_meta( $post->ID );
     ?>
     <p>
-        <label for="author_and_title-article-original" class="author_and_title-row-title">
-            <?php _e( '<i>Author and Title of the article:</i>', 'links-textdomain' )?>
+        <label for="d_author" class="discussion_author">
+            <?php _e( '<i>Author:</i>', 'textdomain' )?>
         </label><br>
-        <textarea rows="5" cols="70" name="author_and_title-article-original" id="author_and_title-article-original"><?php if ( isset ( $author_and_title_stored_meta['author_and_title-article-original'] ) ) echo $author_and_title_stored_meta['author_and_title-article-original'][0]; ?></textarea>
+        <input type="text" size="67" name="d_author" id="d_author" value="<?php if ( isset ( $discussion_author_stored['d_author'] ) ) echo $discussion_author_stored['d_author'][0]; ?>" />
     </p>
 <?php
 }
 
 /**
- * Saves the custom meta input 'Author and Title of the article'
+ * Saves the metabox (custom field 'd_author')
  */
-function author_and_title_meta_save( $post_id ) {
+function discussion_author_save( $post_id ) {
 
     // Checks save status
     $is_autosave = wp_is_post_autosave( $post_id );
     $is_revision = wp_is_post_revision( $post_id );
-    $is_valid_nonce = ( isset( $_POST[ 'author_and_title_nonce' ] ) && wp_verify_nonce( $_POST[ 'author_and_title_nonce' ], basename( __FILE__ ) ) ) ? 'true' : 'false';
+    $is_valid_nonce = ( isset( $_POST[ 'discussion_author_nonce' ] ) && wp_verify_nonce( $_POST[ 'discussion_author_nonce' ], basename( __FILE__ ) ) ) ? 'true' : 'false';
 
     // Exits script depending on save status
     if ( $is_autosave || $is_revision || !$is_valid_nonce ) {
@@ -157,52 +158,78 @@ function author_and_title_meta_save( $post_id ) {
     }
 
     // Checks for input and sanitizes/saves if needed
-    if( isset( $_POST[ 'author_and_title-article-original' ] ) ) {
-        update_post_meta( $post_id, 'author_and_title-article-original', sanitize_text_field( $_POST[ 'author_and_title-article-original' ] ) );
+    if( isset( $_POST[ 'd_author' ] ) ) {
+        update_post_meta( $post_id, 'd_author', sanitize_text_field( $_POST[ 'd_author' ] ) );
     }
 }
-add_action( 'save_post', 'author_and_title_meta_save' );
+add_action( 'save_post', 'discussion_author_save' );
+
 
 
 /**
- * Adds the metabox 'Link to article' (Ссылка на статью)
+ * Adds the metabox 'discussion_titles' (ra - research article)
  *-------------------------------------------------
  */
-function links_custom_meta() {
-    add_meta_box( 'links_meta',
-        __('Link to article'),
-        'links_meta_callback',
+function discussion_titles_box() {
+    add_meta_box( 'discussion_titles',
+        __('Research article titles'),
+        'discussion_titles_callback',
         'discussion',
         'advanced',
         'default' );
 }
-add_action('add_meta_boxes', 'links_custom_meta');
+add_action('add_meta_boxes', 'discussion_titles_box');
 
 /**
- *  Describes metabox 'links_meta'
+ *  Describes the metabox 'discussion_titles'
  */
-function links_meta_callback( $post ) {
-    wp_nonce_field( basename(__FILE__), 'links_nonce');
-    $links_stored_meta = get_post_meta( $post->ID );
+function discussion_titles_callback( $post ) {
+    wp_nonce_field( basename(__FILE__), 'discussion_titles_nonce');
+    $discussion_titles_stored = get_post_meta( $post->ID );
     ?>
     <p>
-        <label for="links-article-original" class="links-row-title">
-            <?php _e( '<i>Site:</i>', 'links-textdomain' )?>
+        <label for="ra_title" class="discussion_titles">
+            <?php _e( '<i>Title and Author:</i>', 'textdomain' )?>
         </label><br>
-        <textarea rows="2" cols="70" name="links-article-original" id="links-article-original"> <?php if ( isset ( $links_stored_meta['links-article-original'] ) ) echo $links_stored_meta['links-article-original'][0]; ?></textarea>
+        <textarea rows="2" cols="65" name="ra_title" id="ra_title"> <?php if ( isset ( $discussion_titles_stored['ra_title'] ) ) echo $discussion_titles_stored['ra_title'][0]; ?></textarea>
+    </p>
+    <p>
+        <label for="ra_pubblished" class="discussion_titles">
+            <?php _e( '<i>Pubblished:</i>', 'textdomain' )?>
+        </label><br>
+        <textarea rows="2" cols="65" name="ra_pubblished" id="ra_pubblished"> <?php if ( isset ( $discussion_titles_stored['ra_pubblished'] ) ) echo $discussion_titles_stored['ra_pubblished'][0]; ?></textarea>
+    </p>
+    <p>
+        <label for="ra_tag" class="discussion_titles">
+            <?php _e( '<i>Specialization:</i>', 'textdomain' )?>
+        </label><br>
+        <input type="text" size="67" name="ra_tag" id="ra_tag" value="<?php if ( isset ( $discussion_titles_stored['ra_tag'] ) ) echo $discussion_titles_stored['ra_tag'][0]; ?>" />
+    </p>
+    <p>
+        <label for="ra_link" class="discussion_titles">
+            <?php _e( '<i>Link:</i>', 'textdomain' )?>
+        </label><br>
+        <textarea rows="2" cols="65" name="ra_link" id="ra_link"> <?php if ( isset ( $discussion_titles_stored['ra_link'] ) ) echo $discussion_titles_stored['ra_link'][0]; ?></textarea>
+    </p>
+    <p>
+        <label for="ra_generic_links" class="discussion_titles">
+            <?php _e( '<i>Links to generic research articles:</i>', 'textdomain' )?>
+        </label><br>
+        <textarea rows="5" cols="65" name="ra_generic_links" id="ra_generic_links"> <?php if ( isset ( $discussion_titles_stored['ra_generic_links'] ) ) echo $discussion_titles_stored['ra_generic_links'][0]; ?></textarea>
     </p>
 <?php
 }
 
 /**
- * Saves the custom meta textarea 'links_meta'
+ * Saves the metabox
+ * (custom fields 'ra_title', 'ra_pubblished', 'ra_tag', 'ra_link', 'ra_generic_links')
  */
-function links_meta_save( $post_id ) {
+function discussion_titles_save( $post_id ) {
 
     // Checks save status
     $is_autosave = wp_is_post_autosave( $post_id );
     $is_revision = wp_is_post_revision( $post_id );
-    $is_valid_nonce = ( isset( $_POST[ 'links_nonce' ] ) && wp_verify_nonce( $_POST[ 'links_nonce' ], basename( __FILE__ ) ) ) ? 'true' : 'false';
+    $is_valid_nonce = ( isset( $_POST[ 'discussion_titles_nonce' ] ) && wp_verify_nonce( $_POST[ 'discussion_titles_nonce' ], basename( __FILE__ ) ) ) ? 'true' : 'false';
 
     // Exits script depending on save status
     if ( $is_autosave || $is_revision || !$is_valid_nonce ) {
@@ -210,13 +237,83 @@ function links_meta_save( $post_id ) {
     }
 
     // Checks for input and sanitizes/saves if needed
-    if( isset( $_POST[ 'links-article-original' ] ) ) {
-        update_post_meta( $post_id, 'links-article-original', sanitize_text_field( $_POST[ 'links-article-original' ] ) );
+    if( isset( $_POST[ 'ra_title' ] ) ) {
+        update_post_meta( $post_id, 'ra_title', sanitize_text_field( $_POST[ 'ra_title' ] ) );
+    }
+
+    if( isset( $_POST[ 'ra_pubblished' ] ) ) {
+        update_post_meta( $post_id, 'ra_pubblished', sanitize_text_field( $_POST[ 'ra_pubblished' ] ) );
+    }
+
+    if( isset( $_POST[ 'ra_tag' ] ) ) {
+        update_post_meta( $post_id, 'ra_tag', sanitize_text_field( $_POST[ 'ra_tag' ] ) );
+    }
+
+    if( isset( $_POST[ 'ra_link' ] ) ) {
+        update_post_meta( $post_id, 'ra_link', sanitize_text_field( $_POST[ 'ra_link' ] ) );
+    }
+
+    if( isset( $_POST[ 'ra_generic_links' ] ) ) {
+        update_post_meta( $post_id, 'ra_generic_links', sanitize_text_field( $_POST[ 'ra_generic_links' ] ) );
+    }
+
+}
+add_action( 'save_post', 'discussion_titles_save' );
+
+
+
+/**
+ * Adds  the metabox 'discussion text'
+ *-------------------------------------------------
+ */
+function discussion_text_box() {
+    add_meta_box( 'discussion_text',
+        __('Research article text'),
+        'discussion_text_callback',
+        'discussion',
+        'advanced',
+        'default' );
+}
+add_action('add_meta_boxes', 'discussion_text_box');
+
+/**
+ *  Describes the metabox 'Discussion text'
+ */
+
+function discussion_text_callback( $post ) {
+    wp_nonce_field( basename(__FILE__), 'discussion_text_nonce');
+    $discussion_text_stored = get_post_meta( $post->ID );
+    ?>
+    <p>
+        <label for="ra_text" class="discussion_text">
+            <?php _e( '<i>Text of the Research article:</i>', 'textdomain' )?>
+        </label><br>
+        <textarea rows="20" cols="65" name="ra_text" id="ra_text"><?php if ( isset ( $discussion_text_stored['ra_text'] ) ) echo $discussion_text_stored['ra_text'][0]; ?></textarea>
+    </p>
+<?php
+}
+
+/**
+ * Saves the metabox (custom field 'ra_text')
+ */
+function discussion_text_save( $post_id ) {
+
+    // Checks save status
+    $is_autosave = wp_is_post_autosave( $post_id );
+    $is_revision = wp_is_post_revision( $post_id );
+    $is_valid_nonce = ( isset( $_POST[ 'discussion_text_nonce' ] ) && wp_verify_nonce( $_POST[ 'discussion_text_nonce' ], basename( __FILE__ ) ) ) ? 'true' : 'false';
+
+    // Exits script depending on save status
+    if ( $is_autosave || $is_revision || !$is_valid_nonce ) {
+        return;
+    }
+
+    // Checks for input and sanitizes/saves if needed
+    if( isset( $_POST[ 'ra_text' ] ) ) {
+        update_post_meta( $post_id, 'ra_text', sanitize_text_field( $_POST[ 'ra_text' ] ) );
     }
 }
-add_action( 'save_post', 'links_meta_save' );
-
-
+add_action( 'save_post', 'discussion_text_save' );
 
 
 
