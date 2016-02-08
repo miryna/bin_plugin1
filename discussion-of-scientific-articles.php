@@ -128,7 +128,6 @@ add_action('add_meta_boxes', 'discussion_author_box');
 /**
  *  Describes the metabox 'Discussion author'
  */
-
 function discussion_author_callback( $post ) {
     wp_nonce_field( basename(__FILE__), 'discussion_author_nonce');
     $discussion_author_stored = get_post_meta( $post->ID );
@@ -279,7 +278,6 @@ add_action('add_meta_boxes', 'discussion_text_box');
 /**
  *  Describes the metabox 'Discussion text'
  */
-
 function discussion_text_callback( $post ) {
     wp_nonce_field( basename(__FILE__), 'discussion_text_nonce');
     $discussion_text_stored = get_post_meta( $post->ID );
@@ -314,6 +312,42 @@ function discussion_text_save( $post_id ) {
     }
 }
 add_action( 'save_post', 'discussion_text_save' );
+
+
+
+// TEMPLATE
+//=======================================================
+
+
+add_filter( 'template_include',
+    'include_template_function', 1 );
+
+/**
+ *  If the template single-discussion.php non exists in the theme used the template single-discussion.php from the plugin
+ */
+function include_template_function( $template_path ) {
+    if ( get_post_type() == 'discussion' ) {
+        if ( is_single() ) {
+            // checks if the file exists in the theme first,
+            // otherwise serve the file from the plugin
+            if ( $theme_file = locate_template( array
+            ( 'single-discussion.php' ) ) ) {
+                $template_path = $theme_file;
+            } else {
+                $template_path = plugin_dir_path( __FILE__ ) .
+                    '/single-discussion.php';
+            }
+        }
+    }
+    return $template_path;
+}
+
+
+
+
+
+
+
 
 
 
